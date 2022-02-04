@@ -1,0 +1,50 @@
+#!/bin/bash
+
+echo "[sh] Show todo list"
+echo "[li] Create list"
+echo "[su] Create sublist"
+echo "[ta] Create task"
+echo "[d] Mark done"
+echo "[q] Quit"
+
+while :
+do
+	read -p "(todo) > " ans
+
+	case $ans in
+		sh)
+			cat ~/scripts/todo/todo.dblist
+			;;
+		li)
+			read -p "List name: " mlist
+			[ -z $mlist ] && echo "Empty!" ||  echo "● $mlist" >> ~/scripts/todo/todo.dblist
+			;;
+		su)
+			#grep '^●' ~/scripts/todo/todo.dblist
+			read -p "Chose list: " chosen_list
+			read -p "Sublist name: " sublist
+			before_line=$(exec sed '0,/^●\ '"$chosen_list"'$/d' ~/scripts/todo/todo.dblist | sed '/^●.*/,$d' | tail -1 | sed 's/^.*[[:punct:]]//')
+			sed "/$before_line/a\ \ ○\ $sublist" ~/scripts/todo/todo.dblist
+			;;
+		ta)
+			#read -p "Chose list: " chosen_list
+			read -p "Chose sublist: " chosen_sublist
+			read -p "Task: " task
+			echo $chosen_sublist
+			#before_line=$(sed '0,/^\ \ ○\ Scripts$/d' ~/scripts/todo/todo.dblist | grep ○ | head -1)
+			#before_line=$(exec sed '0,/^●\ Bla$/d' ~/scripts/todo/todo.dblist | sed '/^●.*/,$d' | tail -1 | sed 's/^.*[[:punct:]]//')
+			# sed '0,/^●\ Linux$/d' ~/scripts/todo/todo.dblist | sed '/^●.*/,$d' | sed '/^\ \ ○\ Browser/,$d'
+			sed -i "/\ \ ○\ $chosen_sublist/a\ \ \ \ [ ] $task" ~/scripts/todo/todo.dblist
+			;;
+		d)
+			read -p "Done task: " d_task
+			line=$(grep -n "$d_task" ~/scripts/todo/todo.dblist | awk '{print $1}' | sed 's/[[:punct:]]//')
+			#sed "$lines/\[ ]/[*]/" ~/scripts/todo/todo.dblist
+			sed -i ""$line"s/^.....\ /\ \ \ \ [*/g" ~/scripts/todo/todo.dblist
+			;;
+		q)
+			exit 1
+			;;
+
+esac
+done
